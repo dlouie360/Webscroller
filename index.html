@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#10241f" />
+    <title>Scrollbound | PDF to webnovel reader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main id="app" class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#library" aria-label="Scrollbound library">
+          <span class="brand-mark">S</span>
+          <span>scrollbound</span>
+        </a>
+        <div class="topbar-meta"><span class="status-dot"></span> local library</div>
+      </header>
+
+      <section id="library-view" class="view library-view">
+        <div class="intro-grid">
+          <div class="intro-copy">
+            <p class="eyebrow">Your quiet reading room</p>
+            <h1>Turn pages into<br /><em>something you can carry.</em></h1>
+            <p class="lede">Drop in a PDF. Scroll through it like a webnovel, with your library saved right here on this device.</p>
+          </div>
+          <div class="upload-card" id="drop-zone">
+            <input id="pdf-input" type="file" accept="application/pdf,.pdf" hidden />
+            <div class="upload-icon" aria-hidden="true">↑</div>
+            <h2>Bring a story in</h2>
+            <p>PDFs become clean, continuous chapters.</p>
+            <button class="primary-button" id="choose-file" type="button">Choose a PDF <span>↗</span></button>
+            <span class="drop-hint">or drop it anywhere on this panel</span>
+            <div class="progress-wrap" id="progress-wrap" hidden>
+              <div class="progress-label"><span id="progress-label">Reading pages</span><span id="progress-value">0%</span></div>
+              <div class="progress-track"><div id="progress-bar"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <section class="library-section">
+          <div class="section-heading"><div><p class="eyebrow">Saved on this device</p><h2>Your library</h2></div><span id="book-count" class="count-label">0 stories</span></div>
+          <div id="library-grid" class="library-grid"></div>
+          <div id="empty-state" class="empty-state"><span class="empty-sigil">○</span><p>Your next long read belongs here.</p></div>
+        </section>
+      </section>
+
+      <section id="reader-view" class="view reader-view" hidden>
+        <header class="reader-header">
+          <button class="icon-button" id="back-button" type="button" aria-label="Back to library">←</button>
+          <div class="reader-title"><span class="reader-kicker">NOW READING</span><strong id="reader-book-title"></strong></div>
+          <button class="icon-button" id="reader-menu-button" type="button" aria-label="Open reading settings">Aa</button>
+        </header>
+        <article id="reader-content" class="reader-content"></article>
+        <div id="reader-menu" class="reader-menu" hidden>
+          <div class="menu-grip"></div>
+          <div class="menu-heading"><span>Reading room</span><button id="close-menu" type="button" aria-label="Close reading settings">×</button></div>
+          <div class="setting-row"><span>Text size</span><div class="stepper"><button id="font-down" type="button" aria-label="Decrease text size">−</button><strong id="font-value">18</strong><button id="font-up" type="button" aria-label="Increase text size">+</button></div></div>
+          <div class="setting-row"><span>Line spacing</span><div class="stepper"><button id="spacing-down" type="button" aria-label="Decrease line spacing">−</button><strong id="spacing-value">1.8</strong><button id="spacing-up" type="button" aria-label="Increase line spacing">+</button></div></div>
+          <div class="menu-rule"></div><button class="menu-action" id="menu-library" type="button">← Back to library</button>
+        </div>
+      </section>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>

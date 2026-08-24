@@ -1,0 +1,30 @@
+import { GlobalWorkerOptions, getDocument } from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
+
+const PDF_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+GlobalWorkerOptions.workerSrc = PDF_WORKER_URL;
+const STORAGE_KEY = "scrollbound-books";
+const state = { books: JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"), activeBook: null, fontSize: 18, lineSpacing: 1.8 };
+const $ = (selector) => document.querySelector(selector);
+const libraryView = $("#library-view");
+const readerView = $("#reader-view");
+const input = $("#pdf-input");
+
+function saveBooks() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.books)); }
+function showToast(message) { const toast = $("#toast"); toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2600); }
+function renderLibrary() {
+  const grid = $("#library-grid"); grid.innerHTML = "";
+  $("#book-count").textContent = `${state.books.length} ${state.books.length === 1 ? "story" : "stories"}`;
+  $("#empty-state").hidden = state.books.length > 0;
+  state.books.forEach((book) => { const card = document.createElement("div"); card.className = "book-card"; card.innerHTML = `<div><span class="book-type">PDF conversion</span><h3>${escapeHtml(book.title)}</h3><span class="book-meta">${book.pages} pages · ${book.date}</span></div><button class="book-open" aria-label="Open ${escapeHtml(book.title)}">↗</button>`; card.querySelector(".book-open").addEventListener("click", () => openReader(book)); grid.append(card); });
+}
+function escapeHtml(value) { return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]); }
+function openReader(book) { state.activeBook = book; $("#reader-book-title").textContent = book.title; $("#reader-content").innerHTML = `<p class="chapter-label">A continuous reading</p><h1>${escapeHtml(book.title)}</h1>${book.text.split(/\n\s*\n/).filter(Boolean).map((paragraph) => `<p>${escapeHtml(paragraph.trim())}</p>`).join('<div class="chapter-break"></div>')}`; libraryView.hidden = true; readerView.hidden = false; window.scrollTo(0, 0); applySettings(); }
+function applySettings() { const content = $("#reader-content"); content.style.setProperty("--reader-size", `${state.fontSize}px`); content.style.setProperty("--reader-leading", state.lineSpacing); $("#font-value").textContent = state.fontSize; $("#spacing-value").textContent = state.lineSpacing.toFixed(1); }
+async function convertPdf(file) { if (!file || (!file.type.includes("pdf") && !file.name.toLowerCase().endsWith(".pdf"))) { showToast("Please choose a PDF file."); return; } $("#progress-wrap").hidden = false; $("#progress-label").textContent = "Reading pages"; try { const bytes = await file.arrayBuffer(); const pdf = await getDocument({ data: bytes }).promise; let text = ""; for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) { const page = await pdf.getPage(pageNumber); const content = await page.getTextContent(); text += content.items.map((item) => item.str).join(" ") + "\n\n"; const progress = Math.round((pageNumber / pdf.numPages) * 100); $("#progress-bar").style.width = `${progress}%`; $("#progress-value").textContent = `${progress}%`; } const title = file.name.replace(/\.pdf$/i, "").replace(/[_-]+/g, " "); const book = { id: crypto.randomUUID(), title, text: text.trim() || "This PDF has no selectable text. An OCR pass will be needed for scanned pages.", pages: pdf.numPages, date: new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) }; state.books = [book, ...state.books.filter((item) => item.title !== title)]; saveBooks(); renderLibrary(); input.value = ""; $("#progress-wrap").hidden = true; showToast("Added to your library."); } catch (error) { console.error(error); $("#progress-wrap").hidden = true; showToast("That PDF could not be read. Check that it is not password-protected."); } }
+$("#choose-file").addEventListener("click", () => input.click()); input.addEventListener("change", () => convertPdf(input.files[0])); const dropZone = $("#drop-zone"); ["dragenter", "dragover"].forEach((eventName) => dropZone.addEventListener(eventName, (event) => { event.preventDefault(); dropZone.classList.add("dragging"); })); ["dragleave", "drop"].forEach((eventName) => dropZone.addEventListener(eventName, (event) => { event.preventDefault(); dropZone.classList.remove("dragging"); })); dropZone.addEventListener("drop", (event) => convertPdf(event.dataTransfer.files[0]));
+function closeReader() { readerView.hidden = true; libraryView.hidden = false; $("#reader-menu").hidden = true; window.scrollTo(0, 0); }
+$("#back-button").addEventListener("click", closeReader); $("#menu-library").addEventListener("click", closeReader); $("#reader-menu-button").addEventListener("click", () => $("#reader-menu").hidden = false); $("#close-menu").addEventListener("click", () => $("#reader-menu").hidden = true);
+$("#reader-content").addEventListener("click", () => { if (!$("#reader-menu").hidden) $("#reader-menu").hidden = true; else $("#reader-menu").hidden = false; });
+$("#font-down").addEventListener("click", () => { state.fontSize = Math.max(14, state.fontSize - 1); applySettings(); }); $("#font-up").addEventListener("click", () => { state.fontSize = Math.min(28, state.fontSize + 1); applySettings(); }); $("#spacing-down").addEventListener("click", () => { state.lineSpacing = Math.max(1.3, state.lineSpacing - .1); applySettings(); }); $("#spacing-up").addEventListener("click", () => { state.lineSpacing = Math.min(2.5, state.lineSpacing + .1); applySettings(); });
+document.addEventListener("click", (event) => { if (!readerView.hidden && !$("#reader-menu").hidden && !event.target.closest(".reader-menu") && !event.target.closest("#reader-menu-button") && !event.target.closest("#reader-content")) $("#reader-menu").hidden = true; });
+renderLibrary();
