@@ -30,6 +30,7 @@ git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
 git push -u origin main
 ```
 
-3. In the repository, open **Settings > Pages**, choose **GitHub Actions** as the source, and wait for the `Deploy Scrollbound` workflow to finish.
+3. In the repository, open **Settings > Pages**, choose **GitHub Actions** as the source, and save. This one-time setting is required because GitHub Actions cannot create the Pages site itself.
+4. Open **Actions**, select `Deploy Scrollbound`, and choose **Run workflow** on `main` (or push another commit).
 
 GitHub will show the public HTTPS address in the workflow's deployment environment. Since this is a browser-only app, uploaded books remain saved in each reader's own browser and are not uploaded to a server.
