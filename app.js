@@ -10,7 +10,7 @@ const readerView = $("#reader-view");
 const input = $("#pdf-input");
 
 function saveBooks() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.books)); }
-function showToast(message) { const toast = $("#toast"); toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2600); }
+function showToast() {}
 function renderLibrary() {
   const grid = $("#library-grid"); grid.innerHTML = "";
   $("#book-count").textContent = `${state.books.length} ${state.books.length === 1 ? "story" : "stories"}`;
